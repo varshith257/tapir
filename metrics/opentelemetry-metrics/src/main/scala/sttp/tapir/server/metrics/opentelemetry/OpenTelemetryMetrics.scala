@@ -80,7 +80,7 @@ object OpenTelemetryMetrics {
   def requestActive[F[_]](meter: Meter, labels: MetricLabels): Metric[F, LongUpDownCounter] =
     Metric[F, LongUpDownCounter](
       meter
-        .upDownCounterBuilder("request_active")
+        .upDownCounterBuilder("http.server.active_requests")
         .setDescription("Active HTTP requests")
         .setUnit("1")
         .build(),
@@ -97,7 +97,7 @@ object OpenTelemetryMetrics {
   def requestTotal[F[_]](meter: Meter, labels: MetricLabels): Metric[F, LongCounter] =
     Metric[F, LongCounter](
       meter
-        .counterBuilder("request_total")
+        .counterBuilder("http.server.request.total")
         .setDescription("Total HTTP requests")
         .setUnit("1")
         .build(),
@@ -125,14 +125,15 @@ object OpenTelemetryMetrics {
   def requestDuration[F[_]](meter: Meter, labels: MetricLabels): Metric[F, DoubleHistogram] =
     Metric[F, DoubleHistogram](
       meter
-        .histogramBuilder("request_duration")
+        .histogramBuilder("http.server.request.duration")
         .setDescription("Duration of HTTP requests")
-        .setUnit("ms")
+        .setUnit("s")
+        .setExplicitBucketBoundaries(java.util.List.of(0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10))
         .build(),
       onRequest = (req, recorder, m) =>
         m.eval {
           val requestStart = Instant.now()
-          def duration = Duration.between(requestStart, Instant.now()).toMillis.toDouble
+          def duration = Duration.between(requestStart, Instant.now()).toMillis.toDouble / 1000.0
           EndpointMetric()
             .onResponseHeaders { (ep, res) =>
               m.eval {
