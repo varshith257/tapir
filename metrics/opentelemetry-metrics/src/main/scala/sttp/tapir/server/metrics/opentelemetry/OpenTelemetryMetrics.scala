@@ -119,7 +119,7 @@ object OpenTelemetryMetrics {
           EndpointMetric()
             .onResponseBody { (ep, res) =>
               m.eval {
-                val otLabels =
+                val otLabels: Attributes =
                   merge(asOpenTelemetryAttributes(labels, ep, req), asOpenTelemetryAttributes(labels, Right(res), None))
                   println(s"[DEBUG] Incrementing total requests with labels: $otLabels")
                 counter.add(1, otLabels)
