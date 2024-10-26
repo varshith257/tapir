@@ -121,7 +121,9 @@ object OpenTelemetryMetrics {
               m.eval {
                 val otLabels: Attributes =
                   merge(asOpenTelemetryAttributes(labels, ep, req), asOpenTelemetryAttributes(labels, Right(res), None))
-                  println(s"[DEBUG] Incrementing total requests with labels: $otLabels")
+
+                println(s"[DEBUG] Incrementing total requests with labels: $otLabels")
+
                 counter.add(1, otLabels)
               }
             }
