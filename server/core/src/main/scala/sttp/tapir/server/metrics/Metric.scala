@@ -76,9 +76,9 @@ object OTELMetricLabels {
     forResponse = List(
       "http.response.status_code" -> {
         // OpenTelemetry-compliant
-        case Right(r) => r.code.code
+        case Right(r) => r.code.code.toString
         // Default to 500 for exceptions
-        case Left(_) => 500
+        case Left(_) => "500"
       }
     )
   )
