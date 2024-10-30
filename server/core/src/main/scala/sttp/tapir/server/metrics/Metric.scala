@@ -40,7 +40,7 @@ case class MetricLabels(
   def valuesForResponse(ex: Throwable): List[String] = forResponse.map { case (_, f) => f(Left(ex)) }
 }
 
-object PrometheusMetricLabels {
+object MetricLabels {
 
   /** Labels request by path and method, response by status code */
   lazy val Default: MetricLabels = MetricLabels(
@@ -65,7 +65,7 @@ object PrometheusMetricLabels {
   )
 }
 
-object OpenTelemetryMetricLabels {
+object OTELMetricLabels {
 
   /** Labels request by path and http.request.method, response by http.response.status_code */
   lazy val Default: MetricLabels = MetricLabels(

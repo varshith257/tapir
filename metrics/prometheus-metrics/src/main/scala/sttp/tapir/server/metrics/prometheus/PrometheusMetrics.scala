@@ -28,15 +28,15 @@ case class PrometheusMetrics[F[_]](
   )
 
   /** Registers a `$namespace_request_active{path, method}` gauge (assuming default labels). */
-  def addRequestsActive(labels: MetricLabels = PrometheusMetricLabels.Default): PrometheusMetrics[F] =
+  def addRequestsActive(labels: MetricLabels = MetricLabels.Default): PrometheusMetrics[F] =
     copy(metrics = metrics :+ requestActive(registry, namespace, labels))
 
   /** Registers a `$namespace_request_total{path, method, status}` counter (assuming default labels). */
-  def addRequestsTotal(labels: MetricLabels = PrometheusMetricLabels.Default): PrometheusMetrics[F] =
+  def addRequestsTotal(labels: MetricLabels = MetricLabels.Default): PrometheusMetrics[F] =
     copy(metrics = metrics :+ requestTotal(registry, namespace, labels))
 
   /** Registers a `$namespace_request_duration_seconds{path, method, status, phase}` histogram (assuming default labels). */
-  def addRequestsDuration(labels: MetricLabels = PrometheusMetricLabels.Default, clock: Clock = Clock.systemUTC()): PrometheusMetrics[F] =
+  def addRequestsDuration(labels: MetricLabels = MetricLabels.Default, clock: Clock = Clock.systemUTC()): PrometheusMetrics[F] =
     copy(metrics = metrics :+ requestDuration(registry, namespace, labels, clock))
 
   /** Registers a custom metric. */
@@ -75,7 +75,7 @@ object PrometheusMetrics {
   def default[F[_]](
       namespace: String = "tapir",
       registry: PrometheusRegistry = PrometheusRegistry.defaultRegistry,
-      labels: MetricLabels = PrometheusMetricLabels.Default
+      labels: MetricLabels = MetricLabels.Default
   ): PrometheusMetrics[F] =
     PrometheusMetrics(
       namespace,
