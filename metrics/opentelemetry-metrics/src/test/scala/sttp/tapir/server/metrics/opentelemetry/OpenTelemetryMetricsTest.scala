@@ -101,7 +101,7 @@ class OpenTelemetryMetricsTest extends AnyFlatSpec with Matchers {
               "GET",
               AttributeKey.stringKey("path"),
               "/person",
-    AttributeKey.longKey("http.response.status_code").asInstanceOf[AttributeKey[Long]], // Explicitly cast to Long
+              AttributeKey.longKey("http.response.status_code"),
               200L
             ) && dp.getValue == 2 =>
           true
@@ -111,7 +111,7 @@ class OpenTelemetryMetricsTest extends AnyFlatSpec with Matchers {
               "GET",
               AttributeKey.stringKey("path"),
               "/person",
-    AttributeKey.longKey("http.response.status_code").asInstanceOf[AttributeKey[Long]], // Explicitly cast to Long
+              AttributeKey.longKey("http.response.status_code"),
               400L
             ) && dp.getValue == 2 =>
           true
@@ -154,8 +154,10 @@ class OpenTelemetryMetricsTest extends AnyFlatSpec with Matchers {
         "GET",
         AttributeKey.stringKey("path"),
         "/person",
-    AttributeKey.longKey("http.response.status_code").asInstanceOf[AttributeKey[Long]], // Explicitly cast to Long
-        200L
+        AttributeKey.longKey("http.response.status_code"),
+        200L,
+        AttributeKey.stringKey("phase"),
+        "body"
       )
     )
   }
@@ -209,7 +211,7 @@ class OpenTelemetryMetricsTest extends AnyFlatSpec with Matchers {
       "GET",
       AttributeKey.stringKey("path"),
       "/person",
-    AttributeKey.longKey("http.response.status_code").asInstanceOf[AttributeKey[Long]], // Explicitly cast to Long
+      AttributeKey.longKey("http.response.status_code"),
       500L
     )
     point.getValue shouldBe 1

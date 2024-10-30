@@ -87,21 +87,8 @@ object OpenTelemetryMetrics {
       onRequest = (req, counter, m) => {
         m.unit {
           EndpointMetric()
-            .onEndpointRequest { ep =>
-              m.eval {
-                val attrs = asOpenTelemetryAttributes(labels, ep, req)
-                println(s"[DEBUG] Incrementing active requests with attributes: $attrs")
-
-                counter.add(1, attrs)
-              }
-            }
-            .onResponseBody { (ep, _) =>
-              m.eval {
-                val attrs = asOpenTelemetryAttributes(labels, ep, req)
-                println(s"[DEBUG] Decrementing active requests with attributes: $attrs")
-                counter.add(-1, attrs)
-              }
-            }
+            .onEndpointRequest { ep => m.eval(counter.add(1, asOpenTelemetryAttributes(labels, ep, req))) }
+            .onResponseBody { (ep, _) => m.eval(counter.add(-1, asOpenTelemetryAttributes(labels, ep, req))) }
             .onException { (ep, _) => m.eval(counter.add(-1, asOpenTelemetryAttributes(labels, ep, req))) }
         }
       }
@@ -119,10 +106,8 @@ object OpenTelemetryMetrics {
           EndpointMetric()
             .onResponseBody { (ep, res) =>
               m.eval {
-                val otLabels: Attributes =
+                val otLabels =
                   merge(asOpenTelemetryAttributes(labels, ep, req), asOpenTelemetryAttributes(labels, Right(res), None))
-
-                println(s"[DEBUG] Incrementing total requests with labels: $otLabels")
 
                 counter.add(1, otLabels)
               }
