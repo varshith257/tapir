@@ -46,10 +46,10 @@ object MetricLabels {
   lazy val Default: MetricLabels = MetricLabels(
     forRequest = List(
       "path" -> { case (ep, _) => ep.showPathTemplate(showQueryParam = None) },
-      "http.request.method" -> { case (_, req) => req.method.method }
+      "method" -> { case (_, req) => req.method.method }
     ),
     forResponse = List(
-      "http.response.status_code" -> {
+      "status" -> {
         case Right(r) =>
           r.code match {
             case c if c.isInformational => "1xx"
