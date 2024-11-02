@@ -207,8 +207,8 @@ class OpenTelemetryMetricsTest extends AnyFlatSpec with Matchers {
 
     // then
     val point = reader.collectAllMetrics().asScala.head.getHistogramData.getPoints.asScala.head
-    point.getAttributes should contain(AttributeKey.stringKey("http.request.method"), "GET")
-    point.getAttributes should contain(AttributeKey.stringKey("path"), "/person")
+    point.getAttributes.get(AttributeKey.stringKey("http.request.method")) shouldBe "GET"
+    point.getAttributes.get(AttributeKey.stringKey("path")) shouldBe "/person"
     point.getSum should be > 0.0
   }
 
@@ -232,8 +232,8 @@ class OpenTelemetryMetricsTest extends AnyFlatSpec with Matchers {
 
     // then
     val point = reader.collectAllMetrics().asScala.head.getHistogramData.getPoints.asScala.head
-    point.getAttributes should contain(AttributeKey.stringKey("http.request.method"), "GET")
-    point.getAttributes should contain(AttributeKey.stringKey("path"), "/person")
+    point.getAttributes.get(AttributeKey.stringKey("http.request.method")) shouldBe "GET"
+    point.getAttributes.get(AttributeKey.stringKey("path")) shouldBe "/person"
     point.getSum should be > 0.0
   }
 
