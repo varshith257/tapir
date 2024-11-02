@@ -18,6 +18,17 @@ object TestUtil {
     override def toStream(serverRequest: ServerRequest, maxBytes: Option[Long]): streams.BinaryStream = ???
   }
 
+  object TestRequestBodyWithContentLength extends RequestBody[Identity, NoStreams] {
+    override val streams: Streams[NoStreams] = NoStreams
+    val contentLength: Option[Long] = Some(100L)
+
+    override def toRaw[R](serverRequest: ServerRequest, bodyType: RawBodyType[R], maxBytes: Option[Long]): Identity[RawValue[R]] =
+      TestRequestBody.toRaw(serverRequest, bodyType, maxBytes)
+
+    override def toStream(serverRequest: ServerRequest, maxBytes: Option[Long]): streams.BinaryStream =
+      TestRequestBody.toStream(serverRequest, maxBytes)
+  }
+
   object UnitToResponseBody extends ToResponseBody[Unit, NoStreams] {
     override val streams: Streams[NoStreams] = NoStreams
     override def fromRawValue[R](v: R, headers: HasHeaders, format: CodecFormat, bodyType: RawBodyType[R]): Unit = ()
@@ -42,6 +53,22 @@ object TestUtil {
         pipe: streams.Pipe[REQ, RESP],
         o: WebSocketBodyOutput[streams.Pipe[REQ, RESP], REQ, RESP, _, NoStreams]
     ): String = ""
+  }
+
+  object StringToResponseBodyWithContentLength extends ToResponseBody[String, NoStreams] {
+    override val streams: Streams[NoStreams] = NoStreams
+    val contentLength: Option[Long] = Some(150L)
+
+    override def fromRawValue[R](v: R, headers: HasHeaders, format: CodecFormat, bodyType: RawBodyType[R]): String =
+      StringToResponseBody.fromRawValue(v, headers, format, bodyType)
+
+    override def fromStreamValue(v: streams.BinaryStream, headers: HasHeaders, format: CodecFormat, charset: Option[Charset]): String =
+      StringToResponseBody.fromStreamValue(v, headers, format, charset)
+
+    override def fromWebSocketPipe[REQ, RESP](
+        pipe: streams.Pipe[REQ, RESP],
+        o: WebSocketBodyOutput[streams.Pipe[REQ, RESP], REQ, RESP, _, NoStreams]
+    ): String = StringToResponseBody.fromWebSocketPipe(pipe, o)
   }
 
   implicit val unitBodyListener: BodyListener[Identity, Unit] = new BodyListener[Identity, Unit] {
