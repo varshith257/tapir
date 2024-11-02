@@ -70,12 +70,10 @@ object MetricLabels {
     *   - `http.request.method` - HTTP request method (e.g., GET, POST).
     *   - `path` - The request path or route template.
     *   - `http.response.status_code` - HTTP response status code (200, 404, etc.).
-    *   - `url.scheme` - The URI scheme component (http or https).
     */
   lazy val OpenTelemetryAttributes: MetricLabels = MetricLabels(
     forRequest = List(
       "http.request.method" -> { case (_, req) => req.method.method },
-      "url.scheme" -> { case (_, req) => req.scheme },
       "path" -> { case (ep, _) => ep.showPathTemplate(showQueryParam = None) }
     ),
     forResponse = List(
@@ -83,8 +81,7 @@ object MetricLabels {
         case Right(r) => r.code.code.toString
         // Default to 500 for exceptions
         case Left(_) => "500"
-      },
-      "http.route" -> { case (ep, _) => ep.showPathTemplate(showQueryParam = None) }
+      }
     )
   )
 }
