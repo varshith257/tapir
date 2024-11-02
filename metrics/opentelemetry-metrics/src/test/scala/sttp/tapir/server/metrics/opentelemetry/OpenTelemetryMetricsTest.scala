@@ -196,7 +196,7 @@ class OpenTelemetryMetricsTest extends AnyFlatSpec with Matchers {
     val metrics = OpenTelemetryMetrics[Identity](meter).addRequestBodySize()
     val interpreter = new ServerInterpreter[Any, Identity, Unit, NoStreams](
       _ => List(serverEp),
-      TestRequestBody,
+      TestRequestBody.copy(contentLength = Some(100L)),
       UnitToResponseBody,
       List(metrics.metricsInterceptor()),
       _ => ()
@@ -222,7 +222,7 @@ class OpenTelemetryMetricsTest extends AnyFlatSpec with Matchers {
     val interpreter = new ServerInterpreter[Any, Identity, String, NoStreams](
       _ => List(serverEp),
       TestRequestBody,
-      StringToResponseBody,
+      StringToResponseBody.copy(contentLength = Some(150L)),
       List(metrics.metricsInterceptor()),
       _ => ()
     )
