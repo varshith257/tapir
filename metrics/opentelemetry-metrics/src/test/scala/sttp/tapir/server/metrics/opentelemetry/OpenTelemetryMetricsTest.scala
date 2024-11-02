@@ -193,7 +193,7 @@ class OpenTelemetryMetricsTest extends AnyFlatSpec with Matchers {
     val provider = SdkMeterProvider.builder().registerMetricReader(reader).build()
     val meter = provider.get("tapir-instrumentation")
     val serverEp = PersonsApi().serverEp
-    val metrics = OpenTelemetryMetrics[Identity](meter).addCustom(requestBodySize(meter, MetricLabels.OpenTelemetryAttributes))
+    val metrics = OpenTelemetryMetrics[Identity](meter).addRequestBodySize()
     val interpreter = new ServerInterpreter[Any, Identity, Unit, NoStreams](
       _ => List(serverEp),
       TestRequestBody,
@@ -209,7 +209,7 @@ class OpenTelemetryMetricsTest extends AnyFlatSpec with Matchers {
     val point = reader.collectAllMetrics().asScala.head.getHistogramData.getPoints.asScala.head
     point.getAttributes should contain(AttributeKey.stringKey("http.request.method"), "GET")
     point.getAttributes should contain(AttributeKey.stringKey("path"), "/person")
-    point.getValue should be > 0L // check that the size was recorded
+    point.getSum should be > 0.0
   }
 
   "default metrics" should "collect http.server.response.body.size" in {
@@ -218,7 +218,7 @@ class OpenTelemetryMetricsTest extends AnyFlatSpec with Matchers {
     val provider = SdkMeterProvider.builder().registerMetricReader(reader).build()
     val meter = provider.get("tapir-instrumentation")
     val serverEp = PersonsApi().serverEp
-    val metrics = OpenTelemetryMetrics[Identity](meter).addCustom(responseBodySize(meter, MetricLabels.OpenTelemetryAttributes))
+    val metrics = OpenTelemetryMetrics[Identity](meter).addResponseBodySize()
     val interpreter = new ServerInterpreter[Any, Identity, String, NoStreams](
       _ => List(serverEp),
       TestRequestBody,
@@ -234,7 +234,7 @@ class OpenTelemetryMetricsTest extends AnyFlatSpec with Matchers {
     val point = reader.collectAllMetrics().asScala.head.getHistogramData.getPoints.asScala.head
     point.getAttributes should contain(AttributeKey.stringKey("http.request.method"), "GET")
     point.getAttributes should contain(AttributeKey.stringKey("path"), "/person")
-    point.getValue should be > 0L // check that the size was recorded
+    point.getSum should be > 0.0
   }
 
   "metrics" should "be collected on exception when response from exception handler" in {

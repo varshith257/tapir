@@ -26,6 +26,14 @@ case class OpenTelemetryMetrics[F[_]](meter: Meter, metrics: List[Metric[F, _]])
   def addRequestsDuration(labels: MetricLabels = MetricLabels.OpenTelemetryAttributes): OpenTelemetryMetrics[F] =
     copy(metrics = metrics :+ requestDuration(meter, labels))
 
+  /** Registers a `request_body_size{path, method}` histogram (assuming default labels). */
+  def addRequestBodySize(labels: MetricLabels = MetricLabels.OpenTelemetryAttributes): OpenTelemetryMetrics[F] =
+    copy(metrics = metrics :+ requestBodySize(meter, labels))
+
+  /** Registers a `response_body_size{path, method}` histogram (assuming default labels). */
+  def addResponseBodySize(labels: MetricLabels = MetricLabels.OpenTelemetryAttributes): OpenTelemetryMetrics[F] =
+    copy(metrics = metrics :+ responseBodySize(meter, labels))
+
   /** Registers a custom metric. */
   def addCustom(m: Metric[F, _]): OpenTelemetryMetrics[F] = copy(metrics = metrics :+ m)
 
