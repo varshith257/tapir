@@ -7,7 +7,7 @@ import OpenTelemetryMetrics._
 import io.opentelemetry.api.OpenTelemetry
 import sttp.tapir.model.ServerRequest
 import sttp.tapir.server.interceptor.metrics.MetricsRequestInterceptor
-import sttp.tapir.server.metrics.{EndpointMetric, Metric, MetricLabels, OpenTelemetryAttributes}
+import sttp.tapir.server.metrics.{EndpointMetric, Metric, MetricLabels}
 import sttp.tapir.server.model.ServerResponse
 
 import java.time.{Duration, Instant}
@@ -73,7 +73,9 @@ object OpenTelemetryMetrics {
       List[Metric[F, _]](
         requestActive(meter, labels),
         requestTotal(meter, labels),
-        requestDuration(meter, labels)
+        requestDuration(meter, labels),
+        requestBodySize(meter, labels),
+        responseBodySize(meter, labels)
       )
     )
 
@@ -163,6 +165,48 @@ object OpenTelemetryMetrics {
               }
             }
         }
+    )
+
+  def requestBodySize[F[_]](meter: Meter, labels: MetricLabels): Metric[F, DoubleHistogram] =
+    Metric[F, DoubleHistogram](
+      meter
+        .histogramBuilder("http.server.request.body.size")
+        .setDescription("Size of HTTP request bodies in bytes")
+        .setUnit("By")
+        .build(),
+      onRequest = (req, recorder, m) => {
+        m.unit {
+          EndpointMetric()
+            .onEndpointRequest { ep =>
+              m.eval {
+                val size = req.contentLength.getOrElse(0L).toDouble
+                val otLabels = asOpenTelemetryAttributes(labels, ep, req)
+                recorder.record(size, otLabels)
+              }
+            }
+        }
+      }
+    )
+
+  def responseBodySize[F[_]](meter: Meter, labels: MetricLabels): Metric[F, DoubleHistogram] =
+    Metric[F, DoubleHistogram](
+      meter
+        .histogramBuilder("http.server.response.body.size")
+        .setDescription("Size of HTTP response bodies in bytes")
+        .setUnit("By")
+        .build(),
+      onRequest = (req, recorder, m) => {
+        m.unit {
+          EndpointMetric()
+            .onResponseBody { (ep, res) =>
+              m.eval {
+                val size = res.contentLength.getOrElse(0L).toDouble
+                val otLabels = asOpenTelemetryAttributes(labels, ep, req)
+                recorder.record(size, otLabels)
+              }
+            }
+        }
+      }
     )
 
   private def defaultMeter(otel: OpenTelemetry): Meter = otel.meterBuilder("tapir").setInstrumentationVersion("1.0.0").build()
