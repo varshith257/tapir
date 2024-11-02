@@ -187,6 +187,56 @@ class OpenTelemetryMetricsTest extends AnyFlatSpec with Matchers {
     point.getAttributes shouldBe Attributes.of(AttributeKey.stringKey("key"), "value")
   }
 
+  "default metrics" should "collect http.server.request.body.size" in {
+    // given
+    val reader = InMemoryMetricReader.create()
+    val provider = SdkMeterProvider.builder().registerMetricReader(reader).build()
+    val meter = provider.get("tapir-instrumentation")
+    val serverEp = PersonsApi().serverEp
+    val metrics = OpenTelemetryMetrics[Identity](meter).addCustom(requestBodySize(meter, MetricLabels.OpenTelemetryAttributes))
+    val interpreter = new ServerInterpreter[Any, Identity, Unit, NoStreams](
+      _ => List(serverEp),
+      TestRequestBody,
+      UnitToResponseBody,
+      List(metrics.metricsInterceptor()),
+      _ => ()
+    )
+
+    // when
+    interpreter.apply(PersonsApi.request("Jacob"))
+
+    // then
+    val point = reader.collectAllMetrics().asScala.head.getHistogramData.getPoints.asScala.head
+    point.getAttributes should contain(AttributeKey.stringKey("http.request.method"), "GET")
+    point.getAttributes should contain(AttributeKey.stringKey("path"), "/person")
+    point.getValue should be > 0L // check that the size was recorded
+  }
+
+  "default metrics" should "collect http.server.response.body.size" in {
+    // given
+    val reader = InMemoryMetricReader.create()
+    val provider = SdkMeterProvider.builder().registerMetricReader(reader).build()
+    val meter = provider.get("tapir-instrumentation")
+    val serverEp = PersonsApi().serverEp
+    val metrics = OpenTelemetryMetrics[Identity](meter).addCustom(responseBodySize(meter, MetricLabels.OpenTelemetryAttributes))
+    val interpreter = new ServerInterpreter[Any, Identity, String, NoStreams](
+      _ => List(serverEp),
+      TestRequestBody,
+      StringToResponseBody,
+      List(metrics.metricsInterceptor()),
+      _ => ()
+    )
+
+    // when
+    interpreter.apply(PersonsApi.request("Jacob"))
+
+    // then
+    val point = reader.collectAllMetrics().asScala.head.getHistogramData.getPoints.asScala.head
+    point.getAttributes should contain(AttributeKey.stringKey("http.request.method"), "GET")
+    point.getAttributes should contain(AttributeKey.stringKey("path"), "/person")
+    point.getValue should be > 0L // check that the size was recorded
+  }
+
   "metrics" should "be collected on exception when response from exception handler" in {
     val serverEp = PersonsApi { _ => throw new RuntimeException("Ups") }.serverEp
     val reader = InMemoryMetricReader.create()
