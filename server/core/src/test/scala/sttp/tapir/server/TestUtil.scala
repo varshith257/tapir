@@ -14,23 +14,18 @@ import scala.util.{Success, Try}
 object TestUtil {
   object TestRequestBody extends RequestBody[Identity, NoStreams] {
     override val streams: Streams[NoStreams] = NoStreams
-    override def toRaw[R](serverRequest: ServerRequest, bodyType: RawBodyType[R], maxBytes: Option[Long]): Identity[RawValue[R]] = ???
+    private val content = "Test content"
+    override def toRaw[R](serverRequest: ServerRequest, bodyType: RawBodyType[R], maxBytes: Option[Long]): Identity[RawValue[R]] = {
+      RawValue(content.asInstanceOf[R], Some(content.length.toLong), Nil)
+
+    }
     override def toStream(serverRequest: ServerRequest, maxBytes: Option[Long]): streams.BinaryStream = ???
-  }
-
-  object TestRequestBodyWithContentLength extends RequestBody[Identity, NoStreams] {
-    override val streams: Streams[NoStreams] = NoStreams
-    val contentLength: Option[Long] = Some(100L)
-
-    override def toRaw[R](serverRequest: ServerRequest, bodyType: RawBodyType[R], maxBytes: Option[Long]): Identity[RawValue[R]] =
-      ???
-    override def toStream(serverRequest: ServerRequest, maxBytes: Option[Long]): streams.BinaryStream =
-      ???
   }
 
   object UnitToResponseBody extends ToResponseBody[Unit, NoStreams] {
     override val streams: Streams[NoStreams] = NoStreams
     override def fromRawValue[R](v: R, headers: HasHeaders, format: CodecFormat, bodyType: RawBodyType[R]): Unit = ()
+
     override def fromStreamValue(
         v: streams.BinaryStream,
         headers: HasHeaders,
@@ -45,24 +40,12 @@ object TestUtil {
 
   object StringToResponseBody extends ToResponseBody[String, NoStreams] {
     override val streams: Streams[NoStreams] = NoStreams
-    override def fromRawValue[R](v: R, headers: HasHeaders, format: CodecFormat, bodyType: RawBodyType[R]): String =
-      v.asInstanceOf[String]
+    private val responseContent = "Response content"
+    val contentLength: Option[Long] = Some(responseContent.length.toLong)
+    override def fromRawValue[R](v: R, headers: HasHeaders, format: CodecFormat, bodyType: RawBodyType[R]): String = {
+      responseContent
+    }
     override def fromStreamValue(v: streams.BinaryStream, headers: HasHeaders, format: CodecFormat, charset: Option[Charset]): String = ""
-    override def fromWebSocketPipe[REQ, RESP](
-        pipe: streams.Pipe[REQ, RESP],
-        o: WebSocketBodyOutput[streams.Pipe[REQ, RESP], REQ, RESP, _, NoStreams]
-    ): String = ""
-  }
-
-  object StringToResponseBodyWithContentLength extends ToResponseBody[String, NoStreams] {
-    override val streams: Streams[NoStreams] = NoStreams
-    val contentLength: Option[Long] = Some(150L)
-
-    override def fromRawValue[R](v: R, headers: HasHeaders, format: CodecFormat, bodyType: RawBodyType[R]): String =
-      v.asInstanceOf[String]
-
-    override def fromStreamValue(v: streams.BinaryStream, headers: HasHeaders, format: CodecFormat, charset: Option[Charset]): String =
-      ""
     override def fromWebSocketPipe[REQ, RESP](
         pipe: streams.Pipe[REQ, RESP],
         o: WebSocketBodyOutput[streams.Pipe[REQ, RESP], REQ, RESP, _, NoStreams]
