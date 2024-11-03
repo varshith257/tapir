@@ -73,9 +73,7 @@ object OpenTelemetryMetrics {
       List[Metric[F, _]](
         requestActive(meter, labels),
         requestTotal(meter, labels),
-        requestDuration(meter, labels),
-        requestBodySize(meter, labels),
-        responseBodySize(meter, labels)
+        requestDuration(meter, labels)
       )
     )
 
