@@ -16,7 +16,7 @@ object TestUtil {
     override val streams: Streams[NoStreams] = NoStreams
     private val content = "Test content"
     override def toRaw[R](serverRequest: ServerRequest, bodyType: RawBodyType[R], maxBytes: Option[Long]): Identity[RawValue[R]] = {
-      RawValue(content.asInstanceOf[R], Some(content.length.toLong), Nil)
+      RawValue(content.asInstanceOf[R], createdFiles = Seq(), length = Some(content.length.toLong))
 
     }
     override def toStream(serverRequest: ServerRequest, maxBytes: Option[Long]): streams.BinaryStream = ???
