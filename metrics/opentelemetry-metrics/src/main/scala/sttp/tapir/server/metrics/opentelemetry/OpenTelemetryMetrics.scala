@@ -57,8 +57,9 @@ object OpenTelemetryMetrics {
       },
       "error.type" -> {
         case Left(ex) => ex.getClass.getSimpleName
+        case Right(_) => null
       }
-    )
+    ).filterNot { case (_, value) => value == null }
   )
 
   def apply[F[_]](meter: Meter): OpenTelemetryMetrics[F] = apply(meter, Nil)
