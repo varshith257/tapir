@@ -57,8 +57,6 @@ object OpenTelemetryMetrics {
       },
       "error.type" -> {
         case Left(ex) => ex.getClass.getSimpleName
-        case Right(_) => ""
-
       }
     )
   )
