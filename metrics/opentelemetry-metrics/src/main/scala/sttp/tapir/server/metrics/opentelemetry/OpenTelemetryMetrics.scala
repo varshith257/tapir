@@ -59,7 +59,7 @@ object OpenTelemetryMetrics {
         case Left(ex) => Some(ex.getClass.getSimpleName)
         case Right(_) => None
       }
-    ).collect { case (k, v) if v.nonEmpty => k -> v }
+    ).flatMap { case (key, value) => value.map(v => key -> v) }
   )
 
   def apply[F[_]](meter: Meter): OpenTelemetryMetrics[F] = apply(meter, Nil)
