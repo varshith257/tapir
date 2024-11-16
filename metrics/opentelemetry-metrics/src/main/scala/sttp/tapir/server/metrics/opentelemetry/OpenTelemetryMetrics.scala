@@ -63,7 +63,9 @@ object OpenTelemetryMetrics {
             case Right(_)                   => None // No error.type for successful responses
         }
       }
-    ).collect {  case (k, v) if v(response) != None => k -> v(response).get }
+    ).flatMap {
+    case (k, v) => v(Either.unit).map(value => k -> value)
+  }
   )
 
   def apply[F[_]](meter: Meter): OpenTelemetryMetrics[F] = apply(meter, Nil)
