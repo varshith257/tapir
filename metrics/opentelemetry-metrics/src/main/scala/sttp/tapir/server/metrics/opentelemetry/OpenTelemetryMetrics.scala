@@ -50,16 +50,20 @@ object OpenTelemetryMetrics {
       "path" -> { case (ep, _) => ep.showPathTemplate(showQueryParam = None) }
     ),
     forResponse = List(
-      "http.response.status_code" -> {
-        case Right(r) => r.code.code.toString
-        // Default to 500 for exceptions
-        case Left(_) => "500"
+    "http.response.status_code" -> { response: Either[Throwable, ServerResponse[_]] =>
+        response match {
+            case Right(r) => r.code.code.toString
+            // Default to 500 for exceptions
+            case Left(_) => "500"
+          }
       },
-      "error.type" -> {
-        case Left(ex)                   => Some(ex.getClass.getName) // Exception class name for pre-response errors
-        case Right(_)                   => None // No error.type for successful responses
+    "error.type" -> { response: Either[Throwable, ServerResponse[_]] =>
+       response match {
+            case Left(ex)                   => Some(ex.getClass.getName) // Exception class name for pre-response errors
+            case Right(_)                   => None // No error.type for successful responses
+        }
       }
-    ).collect { case (k, Some(v)) => k -> v }
+    ).collect {  case (k, v) if v(response) != None => k -> v(response).get }
   )
 
   def apply[F[_]](meter: Meter): OpenTelemetryMetrics[F] = apply(meter, Nil)
