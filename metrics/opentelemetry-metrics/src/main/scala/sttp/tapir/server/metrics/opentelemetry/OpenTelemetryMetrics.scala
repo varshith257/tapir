@@ -51,13 +51,12 @@ object OpenTelemetryMetrics {
     ),
     forResponse = List(
       "http.response.status_code" -> {
-        case Right(r) => Some(r.code.code.toString)
+        case Right(r) => r.code.code.toString
         // Default to 500 for exceptions
-        case Left(_) => Some("500")
+        case Left(_) => "500"
       },
       "error.type" -> {
         case Left(ex)                   => Some(ex.getClass.getName) // Exception class name for pre-response errors
-        case Right(r) if r.code.isError => Some(r.code.code.toString) // Status code for error responses
         case Right(_)                   => None // No error.type for successful responses
       }
     ).collect { case (k, Some(v)) => k -> v }
