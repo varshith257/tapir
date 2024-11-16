@@ -63,8 +63,7 @@ object OpenTelemetryMetrics {
             case Right(_)                   => None // No error.type for successful responses
         }
       }
-    ).flatMap {
-    case (k, v) => v(Either.unit).map(value => k -> value)
+    ).collect { case (k, Some(v)) => k -> v }
   }
   )
 
