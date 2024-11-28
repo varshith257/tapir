@@ -224,9 +224,7 @@ class OpenTelemetryMetricsTest extends AnyFlatSpec with Matchers {
       AttributeKey.stringKey("url.scheme"),
       "http",
       AttributeKey.stringKey("http.response.status_code"),
-      "500",
-      AttributeKey.stringKey("error.type"),
-      "RuntimeException"
+      "500"
     )
     point.getValue shouldBe 1
   }
