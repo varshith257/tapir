@@ -29,7 +29,7 @@ case class EndpointMetric[F[_]](
 case class ResponsePhaseLabel(name: String, headersValue: String, bodyValue: String)
 case class MetricLabels(
     forRequest: List[(String, (AnyEndpoint, ServerRequest) => String)],
-    forResponse: List[(String, Either[Throwable, ServerResponse[_]] => String)],
+    forResponse: List[(String, Either[Throwable, ServerResponse[_]] => Option[String])],
     forResponsePhase: ResponsePhaseLabel = ResponsePhaseLabel("phase", "headers", "body")
 ) {
   def namesForRequest: List[String] = forRequest.map { case (name, _) => name }
