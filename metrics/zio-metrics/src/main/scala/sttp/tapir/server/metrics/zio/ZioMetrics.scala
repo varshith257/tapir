@@ -87,8 +87,8 @@ object ZioMetrics {
 
   /** Convert into zio metric labels */
   private def asZioLabel(l: MetricLabels, res: Either[Throwable, ServerResponse[_]], phase: Option[String]): Set[MetricLabel] = {
-    val responseLabels = l.forResponse.flatMap { case (key, valueFn) =>
-      valueFn(res).map(value => MetricLabel(key, value))
+    val responseLabels = l.forResponse.map { case (key, valueFn) =>
+      MetricLabel(key, valueFn(res).getOrElse("unknown"))
     }
     val phaseLabel = phase.map(v => MetricLabel(l.forResponsePhase.name, v))
     (responseLabels ++ phaseLabel).toSet
